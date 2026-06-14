@@ -467,7 +467,13 @@ function resetSearch() {
 document.addEventListener("DOMContentLoaded", () => {
     loadSales();
     populateProductSelect();
-    document.getElementById("tambahBtn").addEventListener("click", showOrderForm);
+    
+    // Dipastikan tombol ditemukan dan event listener dipasang
+    const tambahBtn = document.getElementById("tambahBtn");
+    if (tambahBtn) {
+        tambahBtn.onclick = showOrderForm;
+    }
+
     document.getElementById("saveOrderBtn").addEventListener("click", saveOrder);
     document.getElementById("cancelFormBtn").addEventListener("click", cancelForm);
     document.getElementById("searchBtn").addEventListener("click", applySearch);

@@ -37,6 +37,19 @@ h1 {
 .nav-btn.active {
     background: #684f36;
 }
+/* Perbaikan Tombol Tambah agar selalu bisa diklik */
+#tambahBtn {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    margin: 5px;
+    position: relative;
+    z-index: 1000;
+    pointer-events: auto;
+}
 .btn-primary, button {
     background: #684f36;
     color: #fff;
@@ -106,7 +119,6 @@ input, select, textarea {
     display: flex;
     gap: 10px;
 }
-/* Search bar - sejajar horizontal */
 .search-bar {
     display: flex;
     flex-wrap: wrap;
