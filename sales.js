@@ -163,7 +163,7 @@ function initCustomForm() {
         qtyInput.min = 1;
         qtyInput.style.width = "80px";
         let rmBtn = document.createElement("button");
-        rmBtn.innerText = "Hapus";
+        rmBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
         rmBtn.className = "btn-danger";
         rmBtn.onclick = () => { row.remove(); hitungCustomTotal(); };
         row.appendChild(sizeSel);
@@ -377,7 +377,7 @@ function editOrder(id) {
             qtyInput.min = 1;
             qtyInput.style.width = "80px";
             let rmBtn = document.createElement("button");
-            rmBtn.innerText = "Hapus";
+            rmBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
             rmBtn.className = "btn-danger";
             rmBtn.onclick = () => row.remove();
             row.appendChild(sizeSel);
@@ -389,7 +389,7 @@ function editOrder(id) {
         if (item.variasi.length === 0) {
             let row = document.createElement("div");
             row.className = "size-row";
-            row.innerHTML = `<select><option>S</option><option>M</option><option>L</option><option>XL</option></select><select><option>Lengan Pendek</option><option>Lengan Panjang</option></select><input type="number" value="1" min="1"><button class="btn-danger">Hapus</button>`;
+            row.innerHTML = `<select><option>S</option><option>M</option><option>L</option><option>XL</option></select><select><option>Lengan Pendek</option><option>Lengan Panjang</option></select><input type="number" value="1" min="1"><button class="btn-danger"><i class="fas fa-trash-alt"></i></button>`;
             container.appendChild(row);
         }
         document.getElementById("tambahVariasiBtn").onclick = () => {
@@ -419,7 +419,7 @@ function editOrder(id) {
             qtyInput.min = 1;
             qtyInput.style.width = "80px";
             let rmBtn = document.createElement("button");
-            rmBtn.innerText = "Hapus";
+            rmBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
             rmBtn.className = "btn-danger";
             rmBtn.onclick = () => row.remove();
             row.appendChild(sizeSel);
