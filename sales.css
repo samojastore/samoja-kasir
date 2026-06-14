@@ -1,0 +1,188 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #111;
+    color: #fff;
+    font-family: Arial;
+    padding: 20px;
+}
+.container {
+    max-width: 1300px;
+    margin: auto;
+    background: #1e1e1e;
+    border-radius: 24px;
+    padding: 20px;
+}
+h1 {
+    color: #684f36;
+    margin-bottom: 20px;
+}
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.nav-btn {
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 40px;
+    text-decoration: none;
+}
+.nav-btn.active {
+    background: #684f36;
+}
+.btn-primary, button {
+    background: #684f36;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    margin: 5px;
+}
+.btn-danger {
+    background: #dc3545;
+}
+.btn-add {
+    background: #28a745;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    border: 1px solid #444;
+    padding: 10px;
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    text-align: center;
+    background: #2a2a2a;
+}
+input, select, textarea {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+.size-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.size-row select {
+    width: 120px;
+    margin-bottom: 0;
+}
+.size-row input {
+    width: 100px;
+    margin-bottom: 0;
+}
+.size-row button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+}
+.form-popup {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 20px;
+    margin: 20px 0;
+}
+.form-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+/* Search bar - sejajar horizontal */
+.search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.search-bar input {
+    flex: 2;
+    min-width: 200px;
+    margin-bottom: 0;
+}
+.search-bar select {
+    flex: 1;
+    min-width: 150px;
+    margin-bottom: 0;
+}
+.search-bar button {
+    flex-shrink: 0;
+    margin: 0;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+.pagination button {
+    background: #333;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+.pagination button.active {
+    background: #684f36;
+}
+.total {
+    font-size: 20px;
+    text-align: right;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #444;
+}
+.table-wrapper {
+    overflow-x: auto;
+}
+.aksi-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 0 5px;
+    padding: 5px;
+    border-radius: 50%;
+}
+.aksi-icon.edit {
+    color: #28a745;
+}
+.aksi-icon.print {
+    color: #17a2b8;
+}
+.aksi-icon.delete {
+    color: #dc3545;
+}
+.aksi-icon:hover {
+    background: #fff;
+    color: #000;
+}
+.info-grosir {
+    font-size: 12px;
+    color: #ffaa66;
+    margin-top: 5px;
+}
+.total-preview {
+    background: #1e1e1e;
+    padding: 10px;
+    border-radius: 20px;
+    margin: 10px 0;
+    text-align: center;
+}

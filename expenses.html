@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir SAMOJA - Pengeluaran</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="expenses.css">
+</head>
+<body>
+<div class="container">
+    <div class="nav-buttons">
+        <a href="sales.html" class="nav-btn">Penjualan</a>
+        <a href="expenses.html" class="nav-btn active">Pengeluaran</a>
+        <a href="income.html" class="nav-btn">Penghasilan</a>
+        <a href="addproduct.html" class="nav-btn">Kelola Produk</a>
+    </div>
+    <h1><i class="fas fa-arrow-down"></i> Kasir SAMOJA - Pengeluaran</h1>
+    <button id="tambahBtn" class="btn-primary">+ Tambah Pengeluaran</button>
+
+    <div id="expenseForm" class="form-popup" style="display:none;">
+        <h3 id="formTitle">Tambah Pengeluaran</h3>
+        <input type="hidden" id="editId">
+        <input type="text" id="expenseId" placeholder="ID (otomatis)" readonly>
+        <select id="expenseCategory">
+            <option value="Kaos">📦 Pembelian Kaos (Stok)</option>
+            <option value="DTF">🖨️ Biaya Cetak DTF</option>
+            <option value="Lainnya">📝 Lainnya</option>
+        </select>
+        <div id="kaosFields">
+            <label>Rincian Pembelian Kaos:</label>
+            <div id="kaosItemsContainer"></div>
+            <button type="button" id="addKaosItemBtn" class="btn-add">+ Tambah Baris Kaos (Bahan & Model)</button>
+            <div class="info-note">* Total harga diinput manual di bawah</div>
+        </div>
+        <div id="dtfFields" style="display:none">
+            <input type="text" id="dtfDesc" placeholder="Deskripsi (contoh: cetak DTF 20 pcs)">
+            <div class="row-dua"><input type="number" id="dtfMeter" placeholder="Jumlah meter" step="0.01"><input type="number" id="dtfPricePerMeter" placeholder="Harga per meter" step="0.01"></div>
+            <div class="info-note">* Total akan dihitung otomatis (meter × harga/meter), bisa diubah manual</div>
+        </div>
+        <div id="simpleFields" style="display:none"><input type="text" id="simpleItem" placeholder="Deskripsi item"></div>
+        <input type="number" id="expenseAmount" placeholder="Total harga (Rp)" step="1">
+        <input type="date" id="expenseDate">
+        <textarea id="expenseNote" rows="2" placeholder="Catatan tambahan"></textarea>
+        <div class="form-actions"><button id="saveExpenseBtn">Simpan</button><button id="cancelFormBtn" class="btn-danger">Batal</button></div>
+    </div>
+
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Cari ID / kategori / deskripsi"><button id="searchBtn">Cari</button><button id="resetBtn">Reset</button></div>
+    <div class="table-wrapper"><table id="expensesTable"><thead><tr><th>ID</th><th>Kategori</th><th>Deskripsi Item</th><th>Total Harga</th><th>Tanggal</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="expensesList"></tbody></table></div>
+    <div id="totalExpenses" class="total">Total Pengeluaran: Rp 0</div>
+    <div id="pagination" class="pagination"></div>
+</div>
+<script src="expenses.js"></script>
+</body>
+</html>

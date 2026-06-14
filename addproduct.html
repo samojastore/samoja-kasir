@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMOJA Kasir - Kelola Produk</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="sales.css">
+</head>
+<body>
+<div class="container">
+    <div class="nav-buttons">
+        <a href="sales.html" class="nav-btn">Penjualan</a>
+        <a href="expenses.html" class="nav-btn">Pengeluaran</a>
+        <a href="income.html" class="nav-btn">Penghasilan</a>
+        <a href="addproduct.html" class="nav-btn active">Kelola Produk</a>
+    </div>
+    <h1><i class="fas fa-boxes"></i> Kelola Produk Jadi</h1>
+    <button id="tambahBtn" class="btn-primary">+ Tambah Produk</button>
+
+    <div id="productForm" class="form-popup" style="display:none;">
+        <h3 id="formTitle">Tambah Produk</h3>
+        <input type="hidden" id="editId">
+        <input type="text" id="productName" placeholder="Nama Produk">
+        <input type="number" id="productPrice" placeholder="Harga (Rp)" step="1">
+        <div class="form-actions"><button id="saveProductBtn">Simpan</button><button id="cancelFormBtn" class="btn-danger">Batal</button></div>
+    </div>
+
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Cari produk..."><button id="searchBtn">Cari</button><button id="resetBtn">Reset</button></div>
+    <div class="table-wrapper"><table id="productsTable"><thead><tr><th>ID</th><th>Nama Produk</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="productsList"></tbody></table></div>
+    <div id="pagination" class="pagination"></div>
+</div>
+<script src="addproduct.js"></script>
+</body>
+</html>

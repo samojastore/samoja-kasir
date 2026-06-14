@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir SAMOJA - Penjualan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="sales.css">
+</head>
+<body>
+<div class="container">
+    <div class="nav-buttons">
+        <a href="sales.html" class="nav-btn active">Penjualan</a>
+        <a href="expenses.html" class="nav-btn">Pengeluaran</a>
+        <a href="income.html" class="nav-btn">Penghasilan</a>
+        <a href="addproduct.html" class="nav-btn">Kelola Produk</a>
+    </div>
+    <h1><i class="fas fa-cash-register"></i> Kasir SAMOJA - Penjualan</h1>
+    <button id="tambahBtn" class="btn-primary">+ Tambah Penjualan</button>
+
+    <div id="orderForm" class="form-popup" style="display:none;">
+        <h3 id="formTitle">Tambah Penjualan</h3>
+        <input type="hidden" id="editId">
+        <input type="text" id="orderId" placeholder="ID Pesanan (manual)">
+        <input type="text" id="customerName" placeholder="Nama Customer">
+        <select id="orderType">
+            <option value="ready">Produk Jadi (Ready)</option>
+            <option value="custom">Custom Design</option>
+        </select>
+        <div id="readyFields">
+            <select id="productSelect"></select>
+            <select id="sizeSelect"><option>S</option><option>M</option><option>L</option><option>XL</option></select>
+            <input type="number" id="qtyReady" value="1" min="1">
+        </div>
+        <div id="customFields" style="display:none">
+            <select id="customJenis"><option value="24s">Cotton Combed 24s</option><option value="30s">Cotton Combed 30s</option></select>
+            <select id="customLengan"><option value="pendek">Lengan Pendek</option><option value="panjang">Lengan Panjang (+Rp 8.000/pcs)</option></select>
+            <input type="text" id="customWarna" placeholder="Warna Kaos">
+            <label>Variasi Ukuran & Jumlah:</label>
+            <div id="sizeVariasiContainer">
+                <div class="size-row">
+                    <select class="varSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option></select>
+                    <input type="number" class="varQty" value="1" min="1">
+                    <button type="button" class="removeVarBtn btn-danger">✕</button>
+                </div>
+            </div>
+            <button type="button" id="addVarBtn" class="btn-add">+ Tambah Ukuran</button>
+            <div id="customGrosirInfo" class="info-grosir"></div>
+            <select id="customSablonDepan"><option value="none">Tidak ada sablon depan</option><option value="Logo">Logo (Rp 10.000)</option><option value="A5">A5 (Rp 15.000)</option><option value="A4">A4 (Rp 25.000)</option><option value="A3">A3 (Rp 35.000)</option></select>
+            <select id="customSablonBelakang"><option value="none">Tidak ada sablon belakang</option><option value="A5">A5 (Rp 15.000)</option><option value="A4">A4 (Rp 25.000)</option><option value="A3">A3 (Rp 35.000)</option></select>
+            <input type="text" id="customPosisiDepan" placeholder="Posisi sablon depan">
+            <input type="text" id="customPosisiBelakang" placeholder="Posisi sablon belakang">
+            <textarea id="customCatatan" rows="2" placeholder="Catatan"></textarea>
+            <div id="customTotalPreview" class="total-preview">Total: Rp 0</div>
+        </div>
+        <select id="orderStatus"><option>Diproses</option><option>Dikirim</option><option>Selesai</option><option>Dibatalkan</option></select>
+        <div class="form-actions"><button id="saveOrderBtn">Simpan</button><button id="cancelFormBtn" class="btn-danger">Batal</button></div>
+    </div>
+
+    <!-- Search bar yang diperbaiki: sejajar horizontal -->
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Cari ID / Customer">
+        <select id="statusFilter">
+            <option value="">Semua Status</option>
+            <option>Diproses</option><option>Dikirim</option><option>Selesai</option><option>Dibatalkan</option>
+        </select>
+        <button id="searchBtn">Cari</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="ordersTable">
+            <thead>
+                <tr><th>ID</th><th>Customer</th><th>Produk</th><th>Jml</th><th>Total</th><th>Status</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="ordersList"></tbody>
+        </table>
+    </div>
+    <div id="totalRevenue" class="total">Total Pendapatan: Rp 0</div>
+    <div id="pagination" class="pagination"></div>
+</div>
+<script src="sales.js"></script>
+</body>
+</html>

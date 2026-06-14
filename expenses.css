@@ -1,0 +1,221 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #111;
+    color: #fff;
+    font-family: Arial;
+    padding: 20px;
+}
+.container {
+    max-width: 1300px;
+    margin: auto;
+    background: #1e1e1e;
+    border-radius: 24px;
+    padding: 20px;
+}
+h1 {
+    color: #684f36;
+    margin-bottom: 20px;
+}
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.nav-btn {
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 40px;
+    text-decoration: none;
+}
+.nav-btn.active {
+    background: #684f36;
+}
+.btn-primary, button {
+    background: #684f36;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    margin: 5px;
+}
+.btn-danger {
+    background: #dc3545;
+}
+.btn-add {
+    background: #28a745;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    border: 1px solid #444;
+    padding: 10px;
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    text-align: center;
+    background: #2a2a2a;
+}
+input, select, textarea {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+.form-popup {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 20px;
+    margin: 20px 0;
+}
+.form-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+.search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.search-bar input {
+    flex: 2;
+    min-width: 200px;
+    margin-bottom: 0;
+}
+.search-bar button {
+    margin: 0;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+.pagination button {
+    background: #333;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+.pagination button.active {
+    background: #684f36;
+}
+.total {
+    font-size: 20px;
+    text-align: right;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #444;
+}
+.table-wrapper {
+    overflow-x: auto;
+}
+.aksi-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 0 5px;
+    padding: 5px;
+    border-radius: 50%;
+}
+.aksi-icon.edit {
+    color: #28a745;
+}
+.aksi-icon.print {
+    color: #17a2b8;
+}
+.aksi-icon.delete {
+    color: #dc3545;
+}
+.aksi-icon:hover {
+    background: #fff;
+    color: #000;
+}
+.row-dua {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.row-dua input {
+    flex: 1;
+    margin-bottom: 0;
+}
+.kaos-item {
+    background: #252525;
+    padding: 15px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+}
+.warna-container {
+    margin: 12px 0;
+}
+/* Perbaikan utama: warna dan jumlah bersebelahan */
+.color-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 10px;
+    background: #1f1f1f;
+    padding: 8px 15px;
+    border-radius: 24px;
+}
+.color-row input:first-child {
+    flex: 3;
+    min-width: 150px;
+}
+.color-row input:last-child {
+    flex: 1;
+    min-width: 100px;
+}
+.color-row button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+.info-note {
+    font-size: 12px;
+    color: #ffaa66;
+    margin: 8px 0;
+}
+.btn-small {
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 30px;
+}
+/* Responsif: pastikan tetap horizontal di HP */
+@media (max-width: 768px) {
+    .color-row {
+        flex-wrap: nowrap;
+    }
+    .color-row input:first-child {
+        min-width: 120px;
+    }
+    .color-row input:last-child {
+        min-width: 80px;
+    }
+}
