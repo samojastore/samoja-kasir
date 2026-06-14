@@ -40,16 +40,10 @@ function renderSales(data) {
         row.insertCell(2).innerText = s.type==="custom"? "[Custom] "+s.productName : s.productName;
         row.insertCell(3).innerText = s.qty;
         row.insertCell(4).innerText = "Rp "+s.total.toLocaleString();
+        // === PERUBAHAN: status hanya teks, tanpa dropdown ===
         let statusCell = row.insertCell(5);
-        let sel = document.createElement("select");
-        ["Diproses","Dikirim","Selesai","Dibatalkan"].forEach(st=>{
-            let opt = document.createElement("option");
-            opt.value=st; opt.innerText=st;
-            if(s.status===st) opt.selected=true;
-            sel.appendChild(opt);
-        });
-        sel.onchange = e=>{ s.status=e.target.value; saveSales(); applySearch(); };
-        statusCell.appendChild(sel);
+        statusCell.innerText = s.status;
+        // ================================================
         let aksi = row.insertCell(6);
         aksi.style.textAlign="center";
         let editBtn = document.createElement("button");
