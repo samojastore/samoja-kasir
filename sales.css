@@ -37,7 +37,6 @@ h1 {
 .nav-btn.active {
     background: #684f36;
 }
-/* Perbaikan Tombol Tambah agar selalu bisa diklik */
 #tambahBtn {
     background: #28a745;
     color: #fff;
@@ -46,9 +45,6 @@ h1 {
     border-radius: 40px;
     cursor: pointer;
     margin: 5px;
-    position: relative;
-    z-index: 1000;
-    pointer-events: auto;
 }
 .btn-primary, button {
     background: #684f36;

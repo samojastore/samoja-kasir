@@ -1,5 +1,6 @@
 // ========== DATA HARGA ==========
 const HARGA_SABLON = { "Logo": 10000, "A5": 15000, "A4": 25000, "A3": 35000, "none": 0 };
+
 const dewasaPendek = {
     eceran: { "S": 44000, "M": 44000, "L": 44000, "XL": 44000, "2XL": 50000, "3XL": 54000, "4XL": 61000 },
     grosir:  { "S": 36000, "M": 36000, "L": 36000, "XL": 36000, "2XL": 41000, "3XL": 47000, "4XL": 53000 }
@@ -16,15 +17,23 @@ const anakPanjang = {
     eceran: { "XS_Anak": 48000, "S_Anak": 40500, "M_Anak": 43000, "L_Anak": 43000, "XL_Anak": 43000, "2XL_Anak": 45000 },
     grosir:  { "XS_Anak": 42000, "S_Anak": 34000, "M_Anak": 34000, "L_Anak": 34000, "XL_Anak": 34000, "2XL_Anak": 38000 }
 };
+
 function getHargaKaos(jenis, tipe, ukuran, lengan, totalQty) {
-    let efektif = (tipe === "anak") ? "30s" : jenis;
     let data;
-    if (tipe === "dewasa") data = (lengan === "pendek") ? dewasaPendek : dewasaPanjang;
-    else data = (lengan === "pendek") ? anakPendek : anakPanjang;
+    if (tipe === "dewasa") {
+        data = (lengan === "pendek") ? dewasaPendek : dewasaPanjang;
+    } else {
+        data = (lengan === "pendek") ? anakPendek : anakPanjang;
+    }
     let harga = (totalQty >= 12) ? data.grosir[ukuran] : data.eceran[ukuran];
-    if (efektif === "24s") harga += 5000;
+    if (harga === undefined) {
+        console.warn("Harga tidak ditemukan", {jenis, tipe, ukuran, lengan});
+        return 0;
+    }
+    if (tipe === "dewasa" && jenis === "24s") harga += 5000;
     return harga;
 }
+
 const sizeOptions = {
     dewasa: ["S","M","L","XL","2XL","3XL","4XL"],
     anak: ["XS_Anak","S_Anak","M_Anak","L_Anak","XL_Anak","2XL_Anak"]
@@ -52,21 +61,23 @@ function loadSales() {
     applySearch();
 }
 function saveSales() { localStorage.setItem("samoja_sales", JSON.stringify(sales)); }
+
 function renderSales(data) {
     let tbody = document.getElementById("ordersList");
     tbody.innerHTML = "";
     let start = (currentPage-1)*itemsPerPage, end = start+itemsPerPage;
     let pageData = data.slice(start, end);
-    let totalAll = data.reduce((s,o)=>s+o.total,0);
+    let totalAll = 0;
     pageData.forEach(s => {
         let row = tbody.insertRow();
         row.insertCell(0).innerText = s.id;
         row.insertCell(1).innerText = s.customer;
         row.insertCell(2).innerText = s.type==="custom"? "[Custom] "+s.productName : s.productName;
         row.insertCell(3).innerText = s.qty;
-        row.insertCell(4).innerText = "Rp "+s.total.toLocaleString();
-        let statusCell = row.insertCell(5);
-        statusCell.innerText = s.status;
+        let safeTotal = isNaN(s.total) ? 0 : s.total;
+        totalAll += safeTotal;
+        row.insertCell(4).innerText = "Rp "+safeTotal.toLocaleString();
+        row.insertCell(5).innerText = s.status;
         let aksi = row.insertCell(6);
         aksi.style.textAlign = "center";
         let editBtn = document.createElement("button");
@@ -106,8 +117,11 @@ function printStruk(s) {
     let itemRows = '';
     if (s.type === 'ready') {
         let hargaSatuan = s.total / s.qty;
-        itemRows = `<tr><td style="padding:4px 0">${s.productName}</td><td style="padding:4px 8px;text-align:center">${s.qty}</td><td style="padding:4px 8px;text-align:right">${hargaSatuan.toLocaleString()}</td><td style="padding:4px 8px;text-align:right">${s.total.toLocaleString()}</td></tr>`;
-    } else if (s.items) {
+        itemRows = `<tr><td style="padding:4px 0">${s.productName}</td>
+                    <td style="padding:4px 8px;text-align:center">${s.qty}</td>
+                    <td style="padding:4px 8px;text-align:right">${hargaSatuan.toLocaleString()}</td>
+                    <td style="padding:4px 8px;text-align:right">${s.total.toLocaleString()}</td></tr>`;
+    } else if (s.items && s.items.length) {
         let item = s.items[0];
         let detail = `${item.jenis === '24s' ? 'Cotton 24s' : 'Cotton 30s'} ${item.tipe === 'dewasa' ? 'Dewasa' : 'Anak'}`;
         if (item.warna) detail += `, ${item.warna}`;
@@ -118,13 +132,35 @@ function printStruk(s) {
         if (item.sablonDepan && item.sablonDepan !== 'none') detail += `, Sablon Depan:${item.sablonDepan}`;
         if (item.sablonBelakang && item.sablonBelakang !== 'none') detail += `, Sablon Belakang:${item.sablonBelakang}`;
         let hargaSatuan = item.total / item.qty;
-        itemRows = `<tr><td style="padding:4px 0">Custom Design<br><small>${detail}</small></td><td style="padding:4px 8px;text-align:center">${item.qty}</td><td style="padding:4px 8px;text-align:right">${hargaSatuan.toLocaleString()}</td><td style="padding:4px 8px;text-align:right">${item.total.toLocaleString()}</tr></tr>`;
+        itemRows = `<tr><td style="padding:4px 0">Custom Design<br><small>${detail}</small></td>
+                    <td style="padding:4px 8px;text-align:center">${item.qty}</td>
+                    <td style="padding:4px 8px;text-align:right">${hargaSatuan.toLocaleString()}</td>
+                    <td style="padding:4px 8px;text-align:right">${item.total.toLocaleString()}</td></tr>`;
     }
     win.document.write(`
-        <html><head><title>Struk ${s.id}</title><style>body{font-family:monospace;margin:20px}.struk{max-width:380px;margin:auto;border:1px solid #ccc;padding:15px}.header{text-align:center;margin-bottom:15px}.header h3{margin:0}.header p{margin:2px 0;font-size:12px}.garis{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:5px 0}th{border-bottom:1px solid #000;text-align:left}.right{text-align:right}.center{text-align:center}.total{font-weight:bold;border-top:1px solid #000;margin-top:5px;padding-top:5px;text-align:right}.footer{text-align:center;margin-top:10px;font-size:11px}</style></head>
-        <body><div class="struk"><div class="header"><h3>SAMOJA STORE</h3><p>Dusun Galumpit RT01/RW01</p><p>Desa Jatiroke, Kec. Jatinangor</p><p>Kab. Sumedang</p></div><div class="garis"></div><p><strong>No.Order:</strong> ${s.id}</p><p><strong>Customer:</strong> ${s.customer}</p><p><strong>Tgl:</strong> ${new Date().toLocaleString()}</p><div class="garis"></div>
-        <table><thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Harga</th><th style="text-align:right">Total</th></tr></thead><tbody>${itemRows}</tbody></table>
-        <div class="total">Total: Rp ${s.total.toLocaleString()}</div><div class="garis"></div><div class="footer">TERIMA KASIH TELAH ORDER DI SAMOJA STORE</div></div></body></html>
+        <html><head><title>Struk ${s.id}</title>
+        <style>
+            body{font-family:monospace;margin:20px}
+            .struk{max-width:380px;margin:auto;border:1px solid #ccc;padding:15px}
+            .header{text-align:center;margin-bottom:15px}
+            .header h3{margin:0}
+            .header p{margin:2px 0;font-size:12px}
+            .garis{border-top:1px dashed #000;margin:8px 0}
+            table{width:100%;border-collapse:collapse;font-size:12px}
+            th,td{padding:5px 0}
+            th{border-bottom:1px solid #000;text-align:left}
+            .right{text-align:right}
+            .center{text-align:center}
+            .total{font-weight:bold;border-top:1px solid #000;margin-top:5px;padding-top:5px;text-align:right}
+            .footer{text-align:center;margin-top:10px;font-size:11px}
+        </style>
+        </head>
+        <body><div class="struk"><div class="header"><h3>SAMOJA STORE</h3><p>Dusun Galumpit RT01/RW01</p><p>Desa Jatiroke, Kec. Jatinangor</p><p>Kab. Sumedang</p></div><div class="garis"></div>
+        <p><strong>No.Order:</strong> ${s.id}</p><p><strong>Customer:</strong> ${s.customer}</p><p><strong>Tgl:</strong> ${new Date().toLocaleString()}</p><div class="garis"></div>
+        <table><thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Harga</th><th style="text-align:right">Total</th></tr></thead>
+        <tbody>${itemRows}</tbody></table>
+        <div class="total">Total: Rp ${s.total.toLocaleString()}</div><div class="garis"></div>
+        <div class="footer">TERIMA KASIH TELAH ORDER DI SAMOJA STORE</div></div></body></html>
     `);
     win.document.close();
     win.print();
@@ -180,13 +216,14 @@ function initCustomForm() {
         let sablonDepan = document.getElementById("custSablonDepan").value;
         let sablonBelakang = document.getElementById("custSablonBelakang").value;
         let rows = document.querySelectorAll("#custVariasiContainer .size-row");
-        let totalQty = 0, totalHarga = 0;
+        let totalQty = 0;
+        rows.forEach(row => totalQty += parseInt(row.querySelector("input").value) || 0);
+        let totalHarga = 0;
         rows.forEach(row => {
             let ukuran = row.querySelector("select:first-child").value;
             let lengan = row.querySelector("select:nth-child(2)").value;
             let qty = parseInt(row.querySelector("input").value) || 0;
             if (qty <= 0) return;
-            totalQty += qty;
             let hargaKaos = getHargaKaos(jenis, tipe, ukuran, lengan, totalQty);
             let biayaDepan = HARGA_SABLON[sablonDepan];
             let biayaBelakang = HARGA_SABLON[sablonBelakang];
@@ -223,14 +260,13 @@ function initCustomForm() {
     hitungCustomTotal();
 }
 
-// ========== HANDLER FORM ==========
 function toggleOrderFields() {
     let type = document.getElementById("orderType").value;
     document.getElementById("readyFields").style.display = type === "ready" ? "block" : "none";
     let customDiv = document.getElementById("customFields");
     if (type === "custom") {
         customDiv.style.display = "block";
-        if (customDiv.children.length === 0 || !document.getElementById("custVariasiContainer") || document.getElementById("custVariasiContainer").children.length === 0) {
+        if (!document.getElementById("custVariasiContainer") || document.getElementById("custVariasiContainer").children.length === 0) {
             initCustomForm();
         }
     } else {
@@ -389,7 +425,10 @@ function editOrder(id) {
         if (item.variasi.length === 0) {
             let row = document.createElement("div");
             row.className = "size-row";
-            row.innerHTML = `<select><option>S</option><option>M</option><option>L</option><option>XL</option></select><select><option>Lengan Pendek</option><option>Lengan Panjang</option></select><input type="number" value="1" min="1"><button class="btn-danger"><i class="fas fa-trash-alt"></i></button>`;
+            row.innerHTML = `<select><option>S</option><option>M</option><option>L</option><option>XL</option></select>
+                            <select><option>Lengan Pendek</option><option>Lengan Panjang</option></select>
+                            <input type="number" value="1" min="1">
+                            <button class="btn-danger"><i class="fas fa-trash-alt"></i></button>`;
             container.appendChild(row);
         }
         document.getElementById("tambahVariasiBtn").onclick = () => {
@@ -463,17 +502,10 @@ function resetSearch() {
     applySearch();
 }
 
-// ========== INITIALIZATION ==========
 document.addEventListener("DOMContentLoaded", () => {
     loadSales();
     populateProductSelect();
-    
-    // Dipastikan tombol ditemukan dan event listener dipasang
-    const tambahBtn = document.getElementById("tambahBtn");
-    if (tambahBtn) {
-        tambahBtn.onclick = showOrderForm;
-    }
-
+    document.getElementById("tambahBtn").addEventListener("click", showOrderForm);
     document.getElementById("saveOrderBtn").addEventListener("click", saveOrder);
     document.getElementById("cancelFormBtn").addEventListener("click", cancelForm);
     document.getElementById("searchBtn").addEventListener("click", applySearch);
