@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SAMOJA - Kasir</title>
+    <link href="https://fonts.googleapis.com/css2?family=Arial&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 24px;
+            padding: 20px;
+        }
+        h1, h2 {
+            margin-bottom: 20px;
+            color: #684f36;
+        }
+        button, .btn {
+            background: #684f36;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #8a6b4c;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #b02a37;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: black;
+        }
+        .btn-print {
+            background: #17a2b8;
+        }
+        .btn-print:hover {
+            background: #138496;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #2a2a2a;
+        }
+        input, select, textarea {
+            padding: 8px;
+            border-radius: 40px;
+            border: 1px solid #555;
+            background: #2a2a2a;
+            color: white;
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .total-pendapatan {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: right;
+            border-top: 1px solid #444;
+            padding-top: 15px;
+        }
+        .aksi-tombol {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        /* Style struk print */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .struk-print, .struk-print * {
+                visibility: visible;
+            }
+            .struk-print {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding: 20px;
+                font-family: monospace;
+                font-size: 12px;
+                color: black;
+                background: white;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            th {
+                display: none;
+            }
+            td {
+                position: relative;
+                padding-left: 50%;
+                text-align: left;
+            }
+            td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: 45%;
+                font-weight: bold;
+                color: #aaa;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="kasirApp">
+    <h1><i class="fas fa-cash-register"></i> Kasir SAMOJA</h1>
+    <div id="loginArea">
+        <p>Halaman ini dilindungi. Masukkan password untuk melanjutkan.</p>
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button id="loginBtn">Login</button>
+        <div id="loginError" style="color:red; margin-top:10px;"></div>
+    </div>
+    <div id="kasirContent" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+            <h2>Daftar Pesanan</h2>
+            <button id="tambahPesananBtn" class="btn"><i class="fas fa-plus"></i> Tambah Pesanan</button>
+        </div>
+        <div id="formTambah" style="display:none; background:#2a2a2a; padding:15px; border-radius:20px; margin-bottom:20px;">
+            <h3>Tambah Pesanan Baru</h3>
+            <div class="form-group">
+                <label>Nama Customer</label>
+                <input type="text" id="namaCustomer" placeholder="Nama">
+            </div>
+            <div class="form-group">
+                <label>Tipe Produk</label>
+                <select id="tipeProduk">
+                    <option value="ready">Produk Jadi (Ready)</option>
+                    <option value="custom">Custom Design</option>
+                </select>
+            </div>
+            <div id="readyFields">
+                <div class="form-group">
+                    <label>Produk</label>
+                    <select id="produkSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label>Ukuran</label>
+                    <select id="ukuranOrder">
+                        <option>S</option><option>M</option><option>L</option><option>XL</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jumlah</label>
+                    <input type="number" id="jumlahOrder" value="1" min="1">
+                </div>
+            </div>
+            <div id="customFields" style="display:none;">
+                <div class="form-group">
+                    <label>Deskripsi Custom (dari pesan WA)</label>
+                    <textarea id="deskripsiCustom" rows="3" placeholder="Salin detail pesanan custom di sini..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Total Harga (Rp)</label>
+                    <input type="number" id="hargaCustom" placeholder="Masukkan total harga">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Status Awal</label>
+                <select id="statusAwal">
+                    <option>Diproses</option>
+                    <option>Dikirim</option>
+                    <option>Selesai</option>
+                    <option>Dibatalkan</option>
+                </select>
+            </div>
+            <button id="simpanPesananBtn" class="btn">Simpan Pesanan</button>
+            <button id="batalTambahBtn" class="btn btn-warning">Batal</button>
+        </div>
+        <div id="tabelPesananContainer">
+            <table id="tabelPesanan">
+                <thead>
+                    <tr><th>ID</th><th>Customer</th><th>Produk</th><th>Detail</th><th>Jumlah</th><th>Total</th><th>Status</th><th>Aksi</th></tr>
+                </thead>
+                <tbody id="tbodyPesanan"></tbody>
+            </table>
+        </div>
+        <div class="total-pendapatan" id="totalPendapatan">Total Pendapatan: Rp 0</div>
+    </div>
+</div>
+
+<script>
+    // ========== KONFIGURASI ==========
+    const KASIR_PASSWORD = "samoja123"; // Ganti dengan password rahasiamu
+    const produkList = [
+        { id: 1, nama: "Eren Yeager", harga: 89000 },
+        { id: 2, nama: "RX-78-02 Gundam", harga: 89000 },
+        { id: 3, nama: "Jiraiya", harga: 89000 }
+    ];
+
+    let orders = [];
+
+    // ========== FUNGSI CRUD ==========
+    function loadOrders() {
+        const stored = localStorage.getItem("samoja_orders");
+        if (stored) orders = JSON.parse(stored);
+        else orders = [];
+        renderTabel();
+    }
+
+    function saveOrders() {
+        localStorage.setItem("samoja_orders", JSON.stringify(orders));
+    }
+
+    // Fungsi print struk
+    function printStruk(order) {
+        const strukWindow = window.open('', '_blank', 'width=400,height=600');
+        const now = new Date();
+        const tanggal = now.toLocaleString('id-ID');
+        strukWindow.document.write(`
+            <html>
+            <head>
+                <title>Struk Pesanan ${order.id}</title>
+                <style>
+                    body { font-family: monospace; margin: 20px; }
+                    .struk { max-width: 300px; margin: auto; border: 1px solid #ccc; padding: 15px; }
+                    .header { text-align: center; margin-bottom: 15px; }
+                    .garis { border-top: 1px dashed #000; margin: 10px 0; }
+                    .total { font-weight: bold; font-size: 16px; margin-top: 10px; }
+                    .footer { text-align: center; font-size: 10px; margin-top: 15px; }
+                </style>
+            </head>
+            <body>
+                <div class="struk">
+                    <div class="header">
+                        <h3>SAMOJA</h3>
+                        <p>Jl. Contoh No. 123, Bandung</p>
+                        <p>Telp: 081234567890</p>
+                        <div class="garis"></div>
+                    </div>
+                    <p><strong>No. Order:</strong> ${order.id}</p>
+                    <p><strong>Customer:</strong> ${order.customer}</p>
+                    <p><strong>Tanggal:</strong> ${tanggal}</p>
+                    <div class="garis"></div>
+                    <p><strong>Produk:</strong> ${order.produkNama}</p>
+                    ${order.detail ? `<p><strong>Detail:</strong> ${order.detail}</p>` : ''}
+                    <p><strong>Jumlah:</strong> ${order.jumlah}</p>
+                    <p><strong>Total:</strong> Rp ${order.total.toLocaleString()}</p>
+                    <div class="garis"></div>
+                    <p><strong>Status:</strong> ${order.status}</p>
+                    <div class="total">Terima kasih telah berbelanja di SAMOJA</div>
+                    <div class="footer">Struk ini dicetak dari sistem kasir SAMOJA</div>
+                </div>
+            </body>
+            </html>
+        `);
+        strukWindow.document.close();
+        strukWindow.print();
+    }
+
+    function renderTabel() {
+        const tbody = document.getElementById("tbodyPesanan");
+        tbody.innerHTML = "";
+        let totalSemua = 0;
+        orders.forEach(order => {
+            totalSemua += order.total;
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = order.id;
+            row.insertCell(1).innerText = order.customer;
+            row.insertCell(2).innerText = order.tipe === "custom" ? "[Custom] " + order.produkNama : order.produkNama;
+            row.insertCell(3).innerText = order.detail || "-";
+            row.insertCell(4).innerText = order.jumlah;
+            row.insertCell(5).innerText = "Rp " + order.total.toLocaleString();
+            
+            // Status dropdown
+            const statusCell = row.insertCell(6);
+            const selectStatus = document.createElement("select");
+            ["Diproses", "Dikirim", "Selesai", "Dibatalkan"].forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s;
+                opt.innerText = s;
+                if (order.status === s) opt.selected = true;
+                selectStatus.appendChild(opt);
+            });
+            selectStatus.addEventListener("change", (e) => {
+                order.status = e.target.value;
+                saveOrders();
+                renderTabel();
+            });
+            statusCell.appendChild(selectStatus);
+            
+            // Aksi: Print & Hapus
+            const aksiCell = row.insertCell(7);
+            aksiCell.className = "aksi-tombol";
+            const printBtn = document.createElement("button");
+            printBtn.innerText = "Print Struk";
+            printBtn.className = "btn-print";
+            printBtn.onclick = () => printStruk(order);
+            aksiCell.appendChild(printBtn);
+            
+            const hapusBtn = document.createElement("button");
+            hapusBtn.innerText = "Hapus";
+            hapusBtn.className = "btn-danger";
+            hapusBtn.onclick = () => {
+                if (confirm("Yakin hapus pesanan ini?")) {
+                    orders = orders.filter(o => o.id !== order.id);
+                    saveOrders();
+                    renderTabel();
+                }
+            };
+            aksiCell.appendChild(hapusBtn);
+        });
+        document.getElementById("totalPendapatan").innerText = `Total Pendapatan: Rp ${totalSemua.toLocaleString()}`;
+    }
+
+    function populateProdukSelect() {
+        const select = document.getElementById("produkSelect");
+        select.innerHTML = "";
+        produkList.forEach(prod => {
+            const option = document.createElement("option");
+            option.value = prod.id;
+            option.innerText = `${prod.nama} - Rp ${prod.harga.toLocaleString()}`;
+            select.appendChild(option);
+        });
+    }
+
+    document.getElementById("tipeProduk")?.addEventListener("change", function() {
+        const isCustom = this.value === "custom";
+        document.getElementById("readyFields").style.display = isCustom ? "none" : "block";
+        document.getElementById("customFields").style.display = isCustom ? "block" : "none";
+    });
+
+    function tambahPesanan() {
+        const customer = document.getElementById("namaCustomer").value.trim();
+        if (!customer) {
+            alert("Nama customer harus diisi");
+            return;
+        }
+        const tipe = document.getElementById("tipeProduk").value;
+        let produkNama = "", jumlah = 1, total = 0, detail = "";
+        
+        if (tipe === "ready") {
+            const produkId = parseInt(document.getElementById("produkSelect").value);
+            const product = produkList.find(p => p.id === produkId);
+            if (!product) return;
+            const ukuran = document.getElementById("ukuranOrder").value;
+            jumlah = parseInt(document.getElementById("jumlahOrder").value);
+            total = product.harga * jumlah;
+            produkNama = `${product.nama} (${ukuran})`;
+            detail = `Ukuran: ${ukuran}`;
+        } else {
+            const deskripsi = document.getElementById("deskripsiCustom").value.trim();
+            const harga = parseInt(document.getElementById("hargaCustom").value);
+            if (!deskripsi || isNaN(harga)) {
+                alert("Isi deskripsi custom dan total harga!");
+                return;
+            }
+            produkNama = "Custom Design";
+            jumlah = 1;
+            total = harga;
+            detail = deskripsi;
+        }
+        
+        const newOrder = {
+            id: Date.now(),
+            customer: customer,
+            tipe: tipe,
+            produkNama: produkNama,
+            detail: detail,
+            jumlah: jumlah,
+            total: total,
+            status: document.getElementById("statusAwal").value
+        };
+        orders.push(newOrder);
+        saveOrders();
+        renderTabel();
+        
+        document.getElementById("formTambah").style.display = "none";
+        document.getElementById("namaCustomer").value = "";
+        document.getElementById("deskripsiCustom").value = "";
+        document.getElementById("hargaCustom").value = "";
+        document.getElementById("jumlahOrder").value = "1";
+        document.getElementById("tipeProduk").value = "ready";
+        document.getElementById("readyFields").style.display = "block";
+        document.getElementById("customFields").style.display = "none";
+    }
+
+    // ========== LOGIN ==========
+    document.getElementById("loginBtn").onclick = () => {
+        const pwd = document.getElementById("passwordInput").value;
+        if (pwd === KASIR_PASSWORD) {
+            document.getElementById("loginArea").style.display = "none";
+            document.getElementById("kasirContent").style.display = "block";
+            loadOrders();
+            populateProdukSelect();
+            document.getElementById("tambahPesananBtn").onclick = () => {
+                document.getElementById("formTambah").style.display = "block";
+            };
+            document.getElementById("batalTambahBtn").onclick = () => {
+                document.getElementById("formTambah").style.display = "none";
+            };
+            document.getElementById("simpanPesananBtn").onclick = tambahPesanan;
+        } else {
+            document.getElementById("loginError").innerText = "Password salah!";
+        }
+    };
+</script>
+</body>
+</html>
