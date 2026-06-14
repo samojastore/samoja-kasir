@@ -5,6 +5,29 @@ const TAMBAH_LENGAN = { "pendek": 0, "panjang": 8000 };
 const TAMBAH_UKURAN = { "2XL": 5000, "3XL": 11000, "4XL": 17000 };
 const HARGA_SABLON = { "Logo": 10000, "A5": 15000, "A4": 25000, "A3": 35000, "none": 0 };
 
+// Harga kaos per ukuran (untuk custom item, sama seperti custom.html)
+const harga30s = {
+    pendek: {
+        "XS": 40000, "S": 32500, "M": 35000, "L": 35000, "XL": 35000, "2XL": 37000,
+        "S_Anak": 32500, "M_Anak": 35000, "L_Anak": 35000, "XL_Anak": 35000
+    },
+    panjang: {
+        "XS": 48000, "S": 35000, "M": 40000, "L": 40000, "XL": 40000, "2XL": 42000,
+        "S_Anak": 35000, "M_Anak": 40000, "L_Anak": 40000, "XL_Anak": 40000
+    }
+};
+function getHargaKaos(jenis, lengan, ukuran) {
+    let harga30 = (lengan === "pendek" ? harga30s.pendek[ukuran] : harga30s.panjang[ukuran]);
+    if (!harga30) harga30 = (lengan === "pendek" ? 35000 : 40000);
+    if (jenis === "30s") return harga30;
+    else return Math.max(0, harga30 - 5000);
+}
+
+const sizeOptions = {
+    dewasa: ["XS", "S", "M", "L", "XL", "2XL"],
+    anak: ["S_Anak", "M_Anak", "L_Anak", "XL_Anak"]
+};
+
 function getProducts() {
     let stored = localStorage.getItem("samoja_products");
     if (stored && stored !== "undefined") {
@@ -77,7 +100,6 @@ function renderPagination(total){
     }
 }
 
-// ========== PRINT STRUK ==========
 function printStruk(s) {
     let win = window.open('', '_blank', 'width=450,height=600');
     let itemRows = '';
@@ -186,6 +208,15 @@ function createCustomItemRow(itemData = null) {
             </select>
         </div>
         <input type="text" class="itemWarna" placeholder="Warna Kaos (opsional)" style="width:100%; margin-bottom:10px">
+        
+        <div style="margin-bottom:10px">
+            <label>Tipe Ukuran</label>
+            <select class="itemTipeUkuran" style="width:100%">
+                <option value="dewasa">Dewasa</option>
+                <option value="anak">Anak</option>
+            </select>
+        </div>
+        
         <label>Variasi Ukuran & Jumlah:</label>
         <div class="itemVariasiContainer" style="margin-top:5px"></div>
         <button type="button" class="addVariasiBtn btn-add" style="margin:8px 0">+ Tambah Ukuran</button>
@@ -215,6 +246,8 @@ function createCustomItemRow(itemData = null) {
     `;
     
     let variasiContainer = div.querySelector(".itemVariasiContainer");
+    let tipeSelect = div.querySelector(".itemTipeUkuran");
+    
     function addVariasiRow(ukuran = "S", qty = 1) {
         let row = document.createElement("div");
         row.className = "size-row";
@@ -222,18 +255,62 @@ function createCustomItemRow(itemData = null) {
         row.style.gap = "10px";
         row.style.alignItems = "center";
         row.style.marginBottom = "10px";
-        row.innerHTML = `
-            <select class="varSize" style="width:120px">
-                <option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option>
-                <option value="2XL">2XL (+5.000)</option><option value="3XL">3XL (+11.000)</option><option value="4XL">4XL (+17.000)</option>
-            </select>
-            <input type="number" class="varQty" value="${qty}" min="1" step="1" style="width:100px">
-            <button type="button" class="removeVariasiBtn btn-danger" style="width:36px;height:36px;padding:0">✕</button>
-        `;
-        row.querySelector(".varSize").value = ukuran;
-        row.querySelector(".removeVariasiBtn").onclick = () => row.remove();
+        let select = document.createElement("select");
+        select.className = "varSize";
+        let currentTipe = tipeSelect.value;
+        let options = sizeOptions[currentTipe];
+        options.forEach(opt => {
+            let option = document.createElement("option");
+            option.value = opt;
+            let display = opt;
+            if (currentTipe === "dewasa") {
+                if (opt === "XS") display = "XS";
+                else if (opt === "2XL") display = "2XL";
+                else display = opt;
+            } else {
+                display = opt.replace("_Anak", " Anak");
+            }
+            option.innerText = display;
+            select.appendChild(option);
+        });
+        select.value = ukuran;
+        let qtyInput = document.createElement("input");
+        qtyInput.type = "number";
+        qtyInput.className = "varQty";
+        qtyInput.value = qty;
+        qtyInput.min = 1;
+        qtyInput.style.width = "100px";
+        let removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "removeVariasiBtn btn-danger";
+        removeBtn.style.width = "36px";
+        removeBtn.style.height = "36px";
+        removeBtn.style.padding = "0";
+        removeBtn.innerText = "✕";
+        removeBtn.onclick = () => row.remove();
+        row.appendChild(select);
+        row.appendChild(qtyInput);
+        row.appendChild(removeBtn);
         variasiContainer.appendChild(row);
     }
+    
+    function refreshVariasiRows() {
+        let currentTipe = tipeSelect.value;
+        let rows = variasiContainer.querySelectorAll(".size-row");
+        let selections = [];
+        rows.forEach(row => {
+            let size = row.querySelector(".varSize").value;
+            let qty = row.querySelector(".varQty").value;
+            selections.push({ size, qty });
+        });
+        variasiContainer.innerHTML = "";
+        selections.forEach(sel => addVariasiRow(sel.size, sel.qty));
+        if (selections.length === 0) addVariasiRow("S", 1);
+        calculateItemTotal();
+    }
+    
+    tipeSelect.addEventListener("change", refreshVariasiRows);
+    
     if (itemData && itemData.variasi && itemData.variasi.length) {
         itemData.variasi.forEach(v => addVariasiRow(v.ukuran, v.qty));
     } else {
@@ -246,42 +323,47 @@ function createCustomItemRow(itemData = null) {
         let lengan = div.querySelector(".itemLengan").value;
         let sablonDepan = div.querySelector(".itemSablonDepan").value;
         let sablonBelakang = div.querySelector(".itemSablonBelakang").value;
+        let tipe = tipeSelect.value;
         let rows = div.querySelectorAll(".size-row");
         let totalQty = 0;
         rows.forEach(row => totalQty += parseInt(row.querySelector(".varQty").value) || 0);
-        let hargaDasar = totalQty >= 12 ? GROSIR[jenis] : ECERAN[jenis];
         let totalHarga = 0;
         rows.forEach(row => {
             let ukuran = row.querySelector(".varSize").value;
             let qty = parseInt(row.querySelector(".varQty").value) || 0;
             if (qty === 0) return;
-            let biayaUkuran = TAMBAH_UKURAN[ukuran] || 0;
-            let biayaLengan = TAMBAH_LENGAN[lengan];
-            let biayaDepan = HARGA_SABLON[sablonDepan];
-            let biayaBelakang = HARGA_SABLON[sablonBelakang];
+            let hargaKaos = getHargaKaos(jenis, lengan, ukuran);
+            let biayaDepan = HARGA_SABLON[sablonDepan] || 0;
+            let biayaBelakang = HARGA_SABLON[sablonBelakang] || 0;
             if ((sablonBelakang === "A3" || sablonBelakang === "A4") && sablonDepan === "Logo") biayaDepan = 0;
-            let hargaPerPcs = hargaDasar + biayaLengan + biayaUkuran + biayaDepan + biayaBelakang;
+            let hargaPerPcs = hargaKaos + biayaDepan + biayaBelakang;
             totalHarga += hargaPerPcs * qty;
         });
-        let infoDiv = div.querySelector(".itemGrosirInfo");
-        infoDiv.innerHTML = totalQty >= 12 ? "⭐ Harga grosir (≥12 pcs)" : "Harga eceran (<12 pcs)";
+        div.querySelector(".itemGrosirInfo").innerHTML = totalQty >= 12 ? "⭐ Harga grosir (≥12 pcs)" : "Harga eceran (<12 pcs)";
         div.querySelector(".itemTotalPreview").innerHTML = `Total: Rp ${totalHarga.toLocaleString()} (${totalQty} pcs)`;
         return { total: totalHarga, qty: totalQty };
     }
-    // Pasang event listener
+    
     let fields = [".itemJenis", ".itemLengan", ".itemSablonDepan", ".itemSablonBelakang"];
     fields.forEach(sel => div.querySelector(sel).addEventListener("change", calculateItemTotal));
-    div.querySelector(".itemVariasiContainer").addEventListener("change", calculateItemTotal);
-    div.querySelector(".itemVariasiContainer").addEventListener("input", calculateItemTotal);
+    variasiContainer.addEventListener("change", calculateItemTotal);
+    variasiContainer.addEventListener("input", calculateItemTotal);
+    
     if (itemData) {
         div.querySelector(".itemJenis").value = itemData.jenis || "24s";
         div.querySelector(".itemLengan").value = itemData.lengan || "pendek";
         div.querySelector(".itemWarna").value = itemData.warna || "";
+        div.querySelector(".itemTipeUkuran").value = itemData.tipeUkuran || "dewasa";
         div.querySelector(".itemSablonDepan").value = itemData.sablonDepan || "none";
         div.querySelector(".itemSablonBelakang").value = itemData.sablonBelakang || "none";
         div.querySelector(".itemPosisiDepan").value = itemData.posisiDepan || "";
         div.querySelector(".itemPosisiBelakang").value = itemData.posisiBelakang || "";
         div.querySelector(".itemCatatan").value = itemData.catatan || "";
+        if (itemData.variasi && itemData.variasi.length) {
+            variasiContainer.innerHTML = "";
+            itemData.variasi.forEach(v => addVariasiRow(v.ukuran, v.qty));
+        }
+        refreshVariasiRows();
     }
     calculateItemTotal();
     return div;
@@ -294,7 +376,6 @@ function addCustomItemToForm(itemData = null) {
     newItem.querySelector(".removeItemBtn").onclick = () => newItem.remove();
 }
 
-// ========== MODIFIKASI FORM CUSTOM ==========
 function toggleOrderFields() {
     let type = document.getElementById("orderType").value;
     document.getElementById("readyFields").style.display = type === "ready" ? "block" : "none";
@@ -364,6 +445,7 @@ function saveOrder(){
             let posisiDepan = div.querySelector(".itemPosisiDepan").value.trim();
             let posisiBelakang = div.querySelector(".itemPosisiBelakang").value.trim();
             let catatan = div.querySelector(".itemCatatan").value.trim();
+            let tipeUkuran = div.querySelector(".itemTipeUkuran").value;
             let variasi = [];
             let variasiRows = div.querySelectorAll(".size-row");
             for(let row of variasiRows){
@@ -373,21 +455,19 @@ function saveOrder(){
             }
             if(variasi.length === 0){ alert("Setiap item minimal satu ukuran"); return; }
             let itemQty = variasi.reduce((a,b)=>a+b.qty,0);
-            let hargaDasar = itemQty >= 12 ? GROSIR[jenis] : ECERAN[jenis];
             let itemTotal = 0;
             for(let v of variasi){
-                let biayaUkuran = TAMBAH_UKURAN[v.ukuran] || 0;
-                let biayaLengan = TAMBAH_LENGAN[lengan];
+                let hargaKaos = getHargaKaos(jenis, lengan, v.ukuran);
                 let biayaDepan = HARGA_SABLON[sablonDepan];
                 let biayaBelakang = HARGA_SABLON[sablonBelakang];
                 if((sablonBelakang==="A3"||sablonBelakang==="A4") && sablonDepan==="Logo") biayaDepan=0;
-                let hargaPerPcs = hargaDasar + biayaLengan + biayaUkuran + biayaDepan + biayaBelakang;
+                let hargaPerPcs = hargaKaos + biayaDepan + biayaBelakang;
                 itemTotal += hargaPerPcs * v.qty;
             }
             totalAll += itemTotal;
             totalQtyAll += itemQty;
             items.push({
-                jenis, lengan, warna, sablonDepan, sablonBelakang,
+                jenis, lengan, tipeUkuran, warna, sablonDepan, sablonBelakang,
                 posisiDepan, posisiBelakang, catatan, variasi,
                 total: itemTotal, qty: itemQty
             });
@@ -437,6 +517,7 @@ function editOrder(id){
             let itemData = {
                 jenis: item.jenis,
                 lengan: item.lengan,
+                tipeUkuran: item.tipeUkuran || "dewasa",
                 warna: item.warna,
                 sablonDepan: item.sablonDepan,
                 sablonBelakang: item.sablonBelakang,
@@ -482,7 +563,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     document.getElementById("searchBtn").addEventListener("click",applySearch);
     document.getElementById("resetBtn").addEventListener("click",resetSearch);
     document.getElementById("orderType").addEventListener("change",toggleOrderFields);
-    // Tombol untuk menambah item custom
     let addItemBtn = document.getElementById("addCustomItemBtn");
     if(addItemBtn) addItemBtn.addEventListener("click", () => addCustomItemToForm());
 });
