@@ -27,21 +27,47 @@
             <option value="ready">Produk Jadi (Ready)</option>
             <option value="custom">Custom Design</option>
         </select>
-
-        <!-- Fields untuk produk ready -->
         <div id="readyFields">
             <select id="productSelect"></select>
             <select id="sizeSelect"><option>S</option><option>M</option><option>L</option><option>XL</option></select>
             <input type="number" id="qtyReady" value="1" min="1">
         </div>
-
-        <!-- Fields untuk custom design (multiple items) -->
-        <div id="customFields" style="display:none">
-            <div id="customItemsContainer"></div>
-            <button type="button" id="addCustomItemBtn" class="btn-add" style="margin:10px 0">+ Tambah Item Custom Lain</button>
-            <div id="customTotalPreview" class="total-preview">Total: Rp 0 (0 pcs)</div>
+        <div id="customFields" style="display:none;">
+            <div class="row-dua" style="display:flex; gap:10px; margin-bottom:10px">
+                <select id="custJenis" style="flex:1">
+                    <option value="24s">Cotton Combed 24s</option>
+                    <option value="30s">Cotton Combed 30s</option>
+                </select>
+                <select id="custTipe" style="flex:1">
+                    <option value="dewasa">Dewasa</option>
+                    <option value="anak">Anak</option>
+                </select>
+            </div>
+            <input type="text" id="custWarna" placeholder="Warna Kaos (opsional)">
+            <label>Variasi Ukuran & Lengan:</label>
+            <div id="custVariasiContainer"></div>
+            <button type="button" id="tambahVariasiBtn" class="btn-add">+ Tambah Ukuran</button>
+            <div id="custGrosirInfo" class="info-grosir"></div>
+            <div class="row-dua" style="display:flex; gap:10px; margin-bottom:10px">
+                <select id="custSablonDepan" style="flex:1">
+                    <option value="none">Tidak ada</option>
+                    <option value="Logo">Logo (Rp 10.000)</option>
+                    <option value="A5">A5 (Rp 15.000)</option>
+                    <option value="A4">A4 (Rp 25.000)</option>
+                    <option value="A3">A3 (Rp 35.000)</option>
+                </select>
+                <select id="custSablonBelakang" style="flex:1">
+                    <option value="none">Tidak ada</option>
+                    <option value="A5">A5 (Rp 15.000)</option>
+                    <option value="A4">A4 (Rp 25.000)</option>
+                    <option value="A3">A3 (Rp 35.000)</option>
+                </select>
+            </div>
+            <input type="text" id="custPosisiDepan" placeholder="Posisi sablon depan">
+            <input type="text" id="custPosisiBelakang" placeholder="Posisi sablon belakang">
+            <textarea id="custCatatan" rows="2" placeholder="Catatan tambahan"></textarea>
+            <div id="custTotalPreview" class="total-preview">Total: Rp 0 (0 pcs)</div>
         </div>
-
         <select id="orderStatus">
             <option>Diproses</option><option>Dikirim</option><option>Selesai</option><option>Dibatalkan</option>
         </select>
@@ -51,7 +77,6 @@
         </div>
     </div>
 
-    <!-- Search bar -->
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Cari ID / Customer">
         <select id="statusFilter">
