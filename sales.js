@@ -5,7 +5,7 @@ const TAMBAH_LENGAN = { "pendek": 0, "panjang": 8000 };
 const TAMBAH_UKURAN = { "2XL": 5000, "3XL": 11000, "4XL": 17000 };
 const HARGA_SABLON = { "Logo": 10000, "A5": 15000, "A4": 25000, "A3": 35000, "none": 0 };
 
-// Harga kaos per ukuran (sama seperti custom.html)
+// Harga kaos per ukuran (berdasarkan tabel)
 const harga30s = {
     pendek: {
         "XS": 40000, "S": 32500, "M": 35000, "L": 35000, "XL": 35000, "2XL": 37000,
@@ -27,6 +27,7 @@ const sizeOptions = {
     dewasa: ["XS", "S", "M", "L", "XL", "2XL"],
     anak: ["S_Anak", "M_Anak", "L_Anak", "XL_Anak"]
 };
+const lenganOptions = ["pendek", "panjang"];
 
 function getProducts() {
     let stored = localStorage.getItem("samoja_products");
@@ -101,7 +102,6 @@ function renderPagination(total){
 }
 
 function printStruk(s) {
-    // sama seperti sebelumnya, tidak perlu diubah
     let win = window.open('', '_blank', 'width=450,height=600');
     let itemRows = '';
     if (s.type === 'ready') {
@@ -116,10 +116,10 @@ function printStruk(s) {
         `;
     } else {
         (s.items || []).forEach(item => {
-            let detail = `${item.jenis === '24s' ? 'Cotton 24s' : 'Cotton 30s'} ${item.lengan === 'pendek' ? 'Pendek' : 'Panjang'}`;
+            let detail = `${item.jenis === '24s' ? 'Cotton 24s' : 'Cotton 30s'} ${item.tipeUkuran === 'dewasa' ? 'Dewasa' : 'Anak'}`;
             if (item.warna) detail += `, ${item.warna}`;
             if (item.variasi && item.variasi.length) {
-                let ukuranStr = item.variasi.map(v => `${v.ukuran}: ${v.qty}`).join(', ');
+                let ukuranStr = item.variasi.map(v => `${v.ukuran} (${v.lengan === 'pendek' ? 'Pendek' : 'Panjang'}): ${v.qty}`).join(', ');
                 detail += `, ${ukuranStr}`;
             }
             if (item.sablonDepan && item.sablonDepan !== 'none') detail += `, Sablon Depan:${item.sablonDepan}`;
@@ -188,7 +188,7 @@ function printStruk(s) {
     win.print();
 }
 
-// ========== FUNGSI UNTUK CUSTOM ITEM DINAMIS ==========
+// ========== FUNGSI UNTUK CUSTOM ITEM DINAMIS (dengan lengan per baris) ==========
 function createCustomItemRow(itemData = null) {
     let div = document.createElement("div");
     div.className = "custom-item";
@@ -203,22 +203,14 @@ function createCustomItemRow(itemData = null) {
                 <option value="24s">Cotton Combed 24s</option>
                 <option value="30s">Cotton Combed 30s</option>
             </select>
-            <select class="itemLengan" style="flex:1">
-                <option value="pendek">Lengan Pendek</option>
-                <option value="panjang">Lengan Panjang (+Rp 8.000/pcs)</option>
-            </select>
-        </div>
-        <input type="text" class="itemWarna" placeholder="Warna Kaos (opsional)" style="width:100%; margin-bottom:10px">
-        
-        <div style="margin-bottom:10px">
-            <label>Tipe Ukuran</label>
-            <select class="itemTipeUkuran" style="width:100%">
+            <select class="itemTipeUkuran" style="flex:1">
                 <option value="dewasa">Dewasa</option>
                 <option value="anak">Anak</option>
             </select>
         </div>
+        <input type="text" class="itemWarna" placeholder="Warna Kaos (opsional)" style="width:100%; margin-bottom:10px">
         
-        <label>Variasi Ukuran & Jumlah:</label>
+        <label>Variasi Ukuran & Lengan:</label>
         <div class="itemVariasiContainer" style="margin-top:5px"></div>
         <button type="button" class="addVariasiBtn btn-add" style="margin:8px 0">+ Tambah Ukuran</button>
         <div class="itemGrosirInfo" style="font-size:12px; color:#ffaa66; margin:5px 0"></div>
@@ -248,52 +240,45 @@ function createCustomItemRow(itemData = null) {
     
     let variasiContainer = div.querySelector(".itemVariasiContainer");
     let tipeSelect = div.querySelector(".itemTipeUkuran");
-    let jenisSelect = div.querySelector(".itemJenis");
     
-    // Fungsi untuk mengatur dropdown jenis berdasarkan tipe
-    function setJenisByTipe() {
-        if (tipeSelect.value === "anak") {
-            jenisSelect.value = "30s";
-            jenisSelect.disabled = true;
-        } else {
-            jenisSelect.disabled = false;
-        }
-        calculateItemTotal();
-    }
-    tipeSelect.addEventListener("change", setJenisByTipe);
-    
-    function addVariasiRow(ukuran = "S", qty = 1) {
+    function addVariasiRow(ukuran = "S", lengan = "pendek", qty = 1) {
         let row = document.createElement("div");
         row.className = "size-row";
         row.style.display = "flex";
         row.style.gap = "10px";
         row.style.alignItems = "center";
         row.style.marginBottom = "10px";
-        let select = document.createElement("select");
-        select.className = "varSize";
+        // select ukuran
+        let sizeSelect = document.createElement("select");
+        sizeSelect.className = "varSize";
         let currentTipe = tipeSelect.value;
         let options = sizeOptions[currentTipe];
         options.forEach(opt => {
             let option = document.createElement("option");
             option.value = opt;
-            let display = opt;
-            if (currentTipe === "dewasa") {
-                if (opt === "XS") display = "XS";
-                else if (opt === "2XL") display = "2XL";
-                else display = opt;
-            } else {
-                display = opt.replace("_Anak", " Anak");
-            }
+            let display = (currentTipe === "dewasa") ? opt : opt.replace("_Anak", " Anak");
             option.innerText = display;
-            select.appendChild(option);
+            sizeSelect.appendChild(option);
         });
-        select.value = ukuran;
+        sizeSelect.value = ukuran;
+        // select lengan
+        let lenganSelect = document.createElement("select");
+        lenganSelect.className = "varLengan";
+        lenganOptions.forEach(l => {
+            let opt = document.createElement("option");
+            opt.value = l;
+            opt.innerText = l === "pendek" ? "Lengan Pendek" : "Lengan Panjang";
+            lenganSelect.appendChild(opt);
+        });
+        lenganSelect.value = lengan;
+        // input qty
         let qtyInput = document.createElement("input");
         qtyInput.type = "number";
         qtyInput.className = "varQty";
         qtyInput.value = qty;
         qtyInput.min = 1;
         qtyInput.style.width = "100px";
+        // remove button
         let removeBtn = document.createElement("button");
         removeBtn.type = "button";
         removeBtn.className = "removeVariasiBtn btn-danger";
@@ -302,7 +287,8 @@ function createCustomItemRow(itemData = null) {
         removeBtn.style.padding = "0";
         removeBtn.innerText = "✕";
         removeBtn.onclick = () => row.remove();
-        row.appendChild(select);
+        row.appendChild(sizeSelect);
+        row.appendChild(lenganSelect);
         row.appendChild(qtyInput);
         row.appendChild(removeBtn);
         variasiContainer.appendChild(row);
@@ -314,38 +300,39 @@ function createCustomItemRow(itemData = null) {
         let selections = [];
         rows.forEach(row => {
             let size = row.querySelector(".varSize").value;
+            let lengan = row.querySelector(".varLengan").value;
             let qty = row.querySelector(".varQty").value;
-            selections.push({ size, qty });
+            selections.push({ size, lengan, qty });
         });
         variasiContainer.innerHTML = "";
-        selections.forEach(sel => addVariasiRow(sel.size, sel.qty));
-        if (selections.length === 0) addVariasiRow("S", 1);
+        selections.forEach(sel => addVariasiRow(sel.size, sel.lengan, sel.qty));
+        if (selections.length === 0) addVariasiRow("S", "pendek", 1);
         calculateItemTotal();
     }
     
     tipeSelect.addEventListener("change", refreshVariasiRows);
     
     if (itemData && itemData.variasi && itemData.variasi.length) {
-        itemData.variasi.forEach(v => addVariasiRow(v.ukuran, v.qty));
+        itemData.variasi.forEach(v => addVariasiRow(v.ukuran, v.lengan, v.qty));
     } else {
-        addVariasiRow("S", 1);
+        addVariasiRow("S", "pendek", 1);
     }
-    div.querySelector(".addVariasiBtn").onclick = () => addVariasiRow("S", 1);
+    div.querySelector(".addVariasiBtn").onclick = () => addVariasiRow("S", "pendek", 1);
     
     function calculateItemTotal() {
-        let jenis = jenisSelect.value;
-        let lengan = div.querySelector(".itemLengan").value;
+        let jenis = div.querySelector(".itemJenis").value;
+        let tipe = tipeSelect.value;
         let sablonDepan = div.querySelector(".itemSablonDepan").value;
         let sablonBelakang = div.querySelector(".itemSablonBelakang").value;
-        let tipe = tipeSelect.value;
         let rows = div.querySelectorAll(".size-row");
         let totalQty = 0;
-        rows.forEach(row => totalQty += parseInt(row.querySelector(".varQty").value) || 0);
         let totalHarga = 0;
         rows.forEach(row => {
             let ukuran = row.querySelector(".varSize").value;
+            let lengan = row.querySelector(".varLengan").value;
             let qty = parseInt(row.querySelector(".varQty").value) || 0;
-            if (qty === 0) return;
+            if (qty <= 0) return;
+            totalQty += qty;
             let hargaKaos = getHargaKaos(jenis, lengan, ukuran);
             let biayaDepan = HARGA_SABLON[sablonDepan] || 0;
             let biayaBelakang = HARGA_SABLON[sablonBelakang] || 0;
@@ -358,16 +345,15 @@ function createCustomItemRow(itemData = null) {
         return { total: totalHarga, qty: totalQty };
     }
     
-    let fields = [".itemJenis", ".itemLengan", ".itemSablonDepan", ".itemSablonBelakang"];
+    let fields = [".itemJenis", ".itemSablonDepan", ".itemSablonBelakang"];
     fields.forEach(sel => div.querySelector(sel).addEventListener("change", calculateItemTotal));
     variasiContainer.addEventListener("change", calculateItemTotal);
     variasiContainer.addEventListener("input", calculateItemTotal);
     
     if (itemData) {
-        jenisSelect.value = itemData.jenis || "24s";
-        div.querySelector(".itemLengan").value = itemData.lengan || "pendek";
+        div.querySelector(".itemJenis").value = itemData.jenis || "24s";
+        div.querySelector(".itemTipeUkuran").value = itemData.tipeUkuran || "dewasa";
         div.querySelector(".itemWarna").value = itemData.warna || "";
-        tipeSelect.value = itemData.tipeUkuran || "dewasa";
         div.querySelector(".itemSablonDepan").value = itemData.sablonDepan || "none";
         div.querySelector(".itemSablonBelakang").value = itemData.sablonBelakang || "none";
         div.querySelector(".itemPosisiDepan").value = itemData.posisiDepan || "";
@@ -375,10 +361,9 @@ function createCustomItemRow(itemData = null) {
         div.querySelector(".itemCatatan").value = itemData.catatan || "";
         if (itemData.variasi && itemData.variasi.length) {
             variasiContainer.innerHTML = "";
-            itemData.variasi.forEach(v => addVariasiRow(v.ukuran, v.qty));
+            itemData.variasi.forEach(v => addVariasiRow(v.ukuran, v.lengan, v.qty));
         }
         refreshVariasiRows();
-        setJenisByTipe();
     }
     calculateItemTotal();
     return div;
@@ -453,26 +438,26 @@ function saveOrder(){
         let totalQtyAll = 0;
         for(let div of itemDivs){
             let jenis = div.querySelector(".itemJenis").value;
-            let lengan = div.querySelector(".itemLengan").value;
+            let tipeUkuran = div.querySelector(".itemTipeUkuran").value;
             let warna = div.querySelector(".itemWarna").value.trim();
             let sablonDepan = div.querySelector(".itemSablonDepan").value;
             let sablonBelakang = div.querySelector(".itemSablonBelakang").value;
             let posisiDepan = div.querySelector(".itemPosisiDepan").value.trim();
             let posisiBelakang = div.querySelector(".itemPosisiBelakang").value.trim();
             let catatan = div.querySelector(".itemCatatan").value.trim();
-            let tipeUkuran = div.querySelector(".itemTipeUkuran").value;
             let variasi = [];
             let variasiRows = div.querySelectorAll(".size-row");
             for(let row of variasiRows){
                 let ukuran = row.querySelector(".varSize").value;
+                let lengan = row.querySelector(".varLengan").value;
                 let jml = parseInt(row.querySelector(".varQty").value);
-                if(jml>0) variasi.push({ ukuran, qty: jml });
+                if(jml>0) variasi.push({ ukuran, lengan, qty: jml });
             }
             if(variasi.length === 0){ alert("Setiap item minimal satu ukuran"); return; }
             let itemQty = variasi.reduce((a,b)=>a+b.qty,0);
             let itemTotal = 0;
             for(let v of variasi){
-                let hargaKaos = getHargaKaos(jenis, lengan, v.ukuran);
+                let hargaKaos = getHargaKaos(jenis, v.lengan, v.ukuran);
                 let biayaDepan = HARGA_SABLON[sablonDepan];
                 let biayaBelakang = HARGA_SABLON[sablonBelakang];
                 if((sablonBelakang==="A3"||sablonBelakang==="A4") && sablonDepan==="Logo") biayaDepan=0;
@@ -482,7 +467,7 @@ function saveOrder(){
             totalAll += itemTotal;
             totalQtyAll += itemQty;
             items.push({
-                jenis, lengan, tipeUkuran, warna, sablonDepan, sablonBelakang,
+                jenis, tipeUkuran, warna, sablonDepan, sablonBelakang,
                 posisiDepan, posisiBelakang, catatan, variasi,
                 total: itemTotal, qty: itemQty
             });
@@ -531,8 +516,7 @@ function editOrder(id){
         sale.items.forEach(item => {
             let itemData = {
                 jenis: item.jenis,
-                lengan: item.lengan,
-                tipeUkuran: item.tipeUkuran || "dewasa",
+                tipeUkuran: item.tipeUkuran,
                 warna: item.warna,
                 sablonDepan: item.sablonDepan,
                 sablonBelakang: item.sablonBelakang,
