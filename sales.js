@@ -22,6 +22,10 @@ function getHargaKaos(jenis, tipe, ukuran, lengan, totalQty) {
     if (tipe === "dewasa") data = (lengan === "pendek") ? dewasaPendek : dewasaPanjang;
     else data = (lengan === "pendek") ? anakPendek : anakPanjang;
     let harga = (totalQty >= 12) ? data.grosir[ukuran] : data.eceran[ukuran];
+    if (harga === undefined) {
+        console.error("Harga tidak ditemukan", { jenis, tipe, ukuran, lengan, totalQty });
+        harga = 0;
+    }
     if (efektif === "24s") harga += 5000;
     return harga;
 }
@@ -57,14 +61,16 @@ function renderSales(data) {
     tbody.innerHTML = "";
     let start = (currentPage-1)*itemsPerPage, end = start+itemsPerPage;
     let pageData = data.slice(start, end);
-    let totalAll = data.reduce((s,o)=>s+o.total,0);
+    let totalAll = 0;
     pageData.forEach(s => {
         let row = tbody.insertRow();
         row.insertCell(0).innerText = s.id;
         row.insertCell(1).innerText = s.customer;
         row.insertCell(2).innerText = s.type==="custom"? "[Custom] "+s.productName : s.productName;
         row.insertCell(3).innerText = s.qty;
-        row.insertCell(4).innerText = "Rp "+s.total.toLocaleString();
+        let safeTotal = isNaN(s.total) ? 0 : s.total;
+        totalAll += safeTotal;
+        row.insertCell(4).innerText = "Rp "+safeTotal.toLocaleString();
         let statusCell = row.insertCell(5);
         statusCell.innerText = s.status;
         let aksi = row.insertCell(6);
@@ -107,7 +113,7 @@ function printStruk(s) {
     if (s.type === 'ready') {
         let hargaSatuan = s.total / s.qty;
         itemRows = `<tr><td style="padding:4px 0">${s.productName}</td><td style="padding:4px 8px;text-align:center">${s.qty}</td><td style="padding:4px 8px;text-align:right">${hargaSatuan.toLocaleString()}</td><td style="padding:4px 8px;text-align:right">${s.total.toLocaleString()}</td></tr>`;
-    } else if (s.items) {
+    } else if (s.items && s.items.length) {
         let item = s.items[0];
         let detail = `${item.jenis === '24s' ? 'Cotton 24s' : 'Cotton 30s'} ${item.tipe === 'dewasa' ? 'Dewasa' : 'Anak'}`;
         if (item.warna) detail += `, ${item.warna}`;
@@ -118,7 +124,7 @@ function printStruk(s) {
         if (item.sablonDepan && item.sablonDepan !== 'none') detail += `, Sablon Depan:${item.sablonDepan}`;
         if (item.sablonBelakang && item.sablonBelakang !== 'none') detail += `, Sablon Belakang:${item.sablonBelakang}`;
         let hargaSatuan = item.total / item.qty;
-        itemRows = `<tr><td style="padding:4px 0">Custom Design<br><small>${detail}</small></td><td style="padding:4px 8px;text-align:center">${item.qty}</td><td style="padding:4px 8px;text-align:right">${hargaSatuan.toLocaleString()}</td><td style="padding:4px 8px;text-align:right">${item.total.toLocaleString()}</tr></tr>`;
+        itemRows = `<tr><td style="padding:4px 0">Custom Design<br><small>${detail}</small></td><td style="padding:4px 8px;text-align:center">${item.qty}</td><td style="padding:4px 8px;text-align:right">${hargaSatuan.toLocaleString()}</td><td style="padding:4px 8px;text-align:right">${item.total.toLocaleString()}</td></tr>`;
     }
     win.document.write(`
         <html><head><title>Struk ${s.id}</title><style>body{font-family:monospace;margin:20px}.struk{max-width:380px;margin:auto;border:1px solid #ccc;padding:15px}.header{text-align:center;margin-bottom:15px}.header h3{margin:0}.header p{margin:2px 0;font-size:12px}.garis{border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:5px 0}th{border-bottom:1px solid #000;text-align:left}.right{text-align:right}.center{text-align:center}.total{font-weight:bold;border-top:1px solid #000;margin-top:5px;padding-top:5px;text-align:right}.footer{text-align:center;margin-top:10px;font-size:11px}</style></head>
@@ -180,13 +186,17 @@ function initCustomForm() {
         let sablonDepan = document.getElementById("custSablonDepan").value;
         let sablonBelakang = document.getElementById("custSablonBelakang").value;
         let rows = document.querySelectorAll("#custVariasiContainer .size-row");
-        let totalQty = 0, totalHarga = 0;
+        let totalQty = 0;
+        rows.forEach(row => {
+            let qty = parseInt(row.querySelector("input").value) || 0;
+            totalQty += qty;
+        });
+        let totalHarga = 0;
         rows.forEach(row => {
             let ukuran = row.querySelector("select:first-child").value;
             let lengan = row.querySelector("select:nth-child(2)").value;
             let qty = parseInt(row.querySelector("input").value) || 0;
             if (qty <= 0) return;
-            totalQty += qty;
             let hargaKaos = getHargaKaos(jenis, tipe, ukuran, lengan, totalQty);
             let biayaDepan = HARGA_SABLON[sablonDepan];
             let biayaBelakang = HARGA_SABLON[sablonBelakang];
@@ -230,7 +240,7 @@ function toggleOrderFields() {
     let customDiv = document.getElementById("customFields");
     if (type === "custom") {
         customDiv.style.display = "block";
-        if (customDiv.children.length === 0 || !document.getElementById("custVariasiContainer") || document.getElementById("custVariasiContainer").children.length === 0) {
+        if (!customDiv.children.length || !document.getElementById("custVariasiContainer") || document.getElementById("custVariasiContainer").children.length === 0) {
             initCustomForm();
         }
     } else {
